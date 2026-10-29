@@ -66,7 +66,13 @@ kubeadm join 172.31.33.244:6443 \
 
 ################
 
-Now paste the tokens in the nodes one by one 
+Now paste the tokens in the NODES one by one 
+
+ex 
+kubeadm join 172.31.33.244:6443 --cri-socket unix:///var/run/cri-dockerd.sock 
+  --token xtclj8.sfrk3rtxzla87eat \
+  --discovery-token-ca-cert-hash sha256:859def62b7b3e30c610181c58adb2a1a551ddbae6e7f8377ceaaee7fdee548de
+
 
 #################
 
