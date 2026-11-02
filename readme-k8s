@@ -81,7 +81,9 @@ To validate :
 kubectl get nodes    #run this command in kubernetes master machine (controller machine)
 
 
-
+next day stop then start inbstance us ethis command
+sudo sysctl --system
+kubectl get nodes
 
 
 
