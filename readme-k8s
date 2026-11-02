@@ -88,14 +88,21 @@ kubectl get nodes
 
 -----------------------------------------------------------------------------------------------------
                 Start the Master Instance
-# 1. Open your admin.conf file to update the master IP if it changed
+# 1. Open your admin.conf file to update the master IP if it changed /Update the master IP inside your admin.conf file
 sudo vi /etc/kubernetes/admin.conf
+# Find the line "server: https://<OLD_IP>:6443" and replace it with your NEW master Private IP.
 # Look for the line starting with "server: https://" and update it with your new Master Private IP
 
-# 2. Update your local user configuration
+# 2. Update your local user configuration /  Copy the updated configuration to your user folder
 cp /etc/kubernetes/admin.conf $HOME/.kube/config
 
-# 3. Restart the kubelet on the master to apply changes
+# 3. Restart the kubelet on the master to apply changes / Restart the master agent to read the new IP
+sudo systemctl restart kubelet
+
+#  Update the connection path to the master
+sudo vi /etc/kubernetes/kubelet.conf
+# Change the "server: https://<OLD_IP>:6443" line to point to your NEW master Private IP.
+
 sudo systemctl restart kubelet
 
 #Step : Re-join the Worker Nodes (If they show as NotReady)
@@ -104,7 +111,6 @@ kubectl get nodes
 if not works then use this
 sudo vi /etc/kubernetes/kubelet.conf
 # Change the "server: https://<OLD_IP>:6443" line to use your new Master Private IP
-
 
 # Restart the worker service:
 sudo systemctl restart kubelet
@@ -118,6 +124,15 @@ kubectl get pods -w
 
 
 
+########################################  on the spot ###############################################
+sudo systemctl start kubelet
+sudo systemctl status kubelet
+
+# Verify all nodes are in 'Ready' status
+kubectl get nodes
+
+# Check that your pods are perfectly stable and running
+kubectl get pods
 
 
 
