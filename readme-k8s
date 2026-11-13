@@ -137,3 +137,75 @@ kubectl get pods
 
 
 
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------
+ master works but worker nodes not working
+------------------------------------------------------------------------------------------------------------------
+**********Remove the broken CentOS Docker repo and install containerd and iproute-tc **********
+
+rm -f /etc/yum.repos.d/docker-ce.repo
+dnf clean all
+dnf install -y containerd iproute-tc
+
+*******************Configure containerd with SystemdCgroup = true and start it: ******************************
+
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+systemctl enable --now containerd
+
+********3Replace /etc/yum.repos.d/kubernetes.repo with v1.32 only and upgrade kubelet, kubeadm, and kubectl: **********
+
+cat <<'EOF' > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://k8s.io
+enabled=1
+gpgcheck=1
+gpgkey=https://k8s.iorepodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+dnf clean all
+dnf update -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+systemctl enable --now kubelet
+
+
+---------------------------------------------------------------------------
+
+Fix: Update kubeadm, kubelet, and kubectl to v1.32 Without Copy-Paste URL Stripping
+
+H="pkgs.k8s.io"
+V="v1.32"
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://${H}/core:/stable:/${V}/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://${H}/core:/stable:/${V}/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+dnf clean all
+dnf update -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+kubeadm version
+
+
+systemctl restart kubelet
+kubeadm join 172.31.31.177:6443 --cri-socket unix:///run/containerd/containerd.sock --token u374bw.cqydpddm09n65zxq --discovery-token-ca-cert-hash sha256:afadc6285879619d701361886641b9a4e8588369446d453868858f8c2b02c615
+
+---------------------------------------------------------------------------------------
+
+
+
+
